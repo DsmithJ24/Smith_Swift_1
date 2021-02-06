@@ -1,11 +1,12 @@
-import Secrets
+import secrets
 import requests
+import json
 #when using debugger, wait a sec for everything to load
 url = "https://api.data.gov/ed/collegescorecard/v1/schools.json?"
 outfile = open(r"api_data.txt", "w")
 
 def get_data():
-    #will need:
+    #will retrieve:
         #school name
         #school city
         #2018 student size
@@ -14,16 +15,12 @@ def get_data():
         #2016 repayment (3 year repayment.overall)
 
     all_data = []
-    #test url: https://api.data.gov/ed/collegescorecard/v1/schools.json?school.degrees_awarded.predominant=2,3&fields=school.state,2018.student.size&api_key=QIht2JJOGAwBJal0uCKw8bURSlaHd5gOGxmlbP3g
-    #add parameters between {url} and &api_key=
-
-    #will need to figure out how much data there is and how to walk through it all
     #gets: 3203 elements and 20 per page. will need 161 pages
     for page in range(162):
         #put additional fields after &fields=
         response = requests.get(f"{url}school.degrees_awarded.predominant=2,3&fields=school.name,school.state,"
                                 f"2018.student.size,2017.student.size,2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line,"
-                                f"2016.repayment.3_yr_repayment.overall&api_key={Secrets.api_key}&page={page}") #put the api url here
+                                f"2016.repayment.3_yr_repayment.overall&api_key={secrets.api_key}&page={page}") #put the api url here
         if response.status_code != 200:
             print("Error getting data!")
             #exit(-1)
@@ -38,13 +35,12 @@ def get_data():
 
     return all_data
 
-#need function to save data in a document
-
+#takes the retrieved data and saves it to a .txt file
 def main():
     demo_data = get_data()
-    print(demo_data, file=outfile)
+    print(json.dumps(demo_data, indent=6), file=outfile)
+    #will create a .txt file with 25626 lines. 25626/8 = 3203 entries as expected
     outfile.close()
-    #maybe move this so it writes to a new line after each entry or page
     print("Data has been saved to a file")
 
 if __name__ == '__main__':
