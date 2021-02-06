@@ -2,6 +2,7 @@ import Secrets
 import requests
 #when using debugger, wait a sec for everything to load
 url = "https://api.data.gov/ed/collegescorecard/v1/schools.json?"
+outfile = open(r"api_data.txt", "w")
 
 def get_data():
     #will need:
@@ -33,7 +34,7 @@ def get_data():
         page_of_data = response.json()
         page_of_school_data = page_of_data['results']
         all_data.extend(page_of_school_data)
-        print(page)
+        #print(page)
 
     return all_data
 
@@ -41,6 +42,9 @@ def get_data():
 
 def main():
     demo_data = get_data()
+    print(demo_data, file=outfile)
+    outfile.close()
+    print("Data has been saved to a file")
 
 if __name__ == '__main__':
     main()
