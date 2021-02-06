@@ -44,6 +44,7 @@ def main():
     demo_data = get_data()
     print(demo_data, file=outfile)
     outfile.close()
+    #maybe move this so it writes to a new line after each entry or page
     print("Data has been saved to a file")
 
 if __name__ == '__main__':
