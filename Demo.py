@@ -16,7 +16,11 @@ def get_data():
 
     all_data = []
     #gets: 3203 elements and 20 per page. will need 161 pages
-    for page in range(162):
+    #for page in range(162):
+    page = 0
+    NextPage = True
+    while NextPage == True:
+        print(page)
         #put additional fields after &fields=
         response = requests.get(f"{url}school.degrees_awarded.predominant=2,3&fields=school.name,school.state,"
                                 f"2018.student.size,2017.student.size,2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line,"
@@ -25,15 +29,25 @@ def get_data():
             print("Error getting data!")
             #exit(-1)
             #do not exit, continue
+            page = page + 1
             continue
 
         #following code puts data in .json format
         page_of_data = response.json()
         page_of_school_data = page_of_data['results']
         all_data.extend(page_of_school_data)
-        #print(page)
-
+        NextPage = check_page(page_of_school_data)
+        page=page+1
+    print("Total number of pages is", page)
     return all_data
+
+def check_page(page):
+    if len(page) == 20:
+        return True
+    elif len(page) < 20:
+        return False
+    #elif len(page) > 20:
+        #print("Entries exceed page!!!")
 
 #takes the retrieved data and saves it to a .txt file
 def main():
