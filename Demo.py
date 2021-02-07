@@ -20,7 +20,7 @@ def get_data():
     page = 0
     NextPage = True
 
-    #change this so it stops on false
+    #Stops if it hits a false
     while NextPage != False:
         #print(page)
         #put additional fields after &fields=
