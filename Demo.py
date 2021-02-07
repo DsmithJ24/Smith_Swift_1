@@ -21,8 +21,8 @@ def get_data():
     NextPage = True
 
     #change this so it stops on false
-    while NextPage == True:
-        print(page)
+    while NextPage != False:
+        #print(page)
         #put additional fields after &fields=
         response = requests.get(f"{url}school.degrees_awarded.predominant=2,3&fields=school.name,school.state,"
                                 f"2018.student.size,2017.student.size,2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line,"
@@ -44,12 +44,13 @@ def get_data():
     return all_data
 
 def check_page(page):
-    if len(page) == 20:
-        return True
-    elif len(page) < 20:
+    if len(page) < 20:
         return False
-    #elif len(page) > 20:
-        #print("Entries exceed page!!!")
+    elif len(page) > 20:
+        print("Entries exceed page!!!")
+        pass
+    else:
+        pass
 
 #takes the retrieved data and saves it to a .txt file
 def main():
