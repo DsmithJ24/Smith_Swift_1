@@ -19,6 +19,8 @@ def get_data():
     #for page in range(162):
     page = 0
     NextPage = True
+
+    #change this so it stops on false
     while NextPage == True:
         print(page)
         #put additional fields after &fields=
