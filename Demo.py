@@ -62,6 +62,8 @@ def check_data_entries(data, pages):
         print(f"Less than {DATA_MINIMUM} entries! Ending")
         # end program?
         exit(-1)
+    else:
+        print(f"Data has {length} entries. Data will now be stored.")
 
 def open_DB(filename: str) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
     # Create a DB if one does not exist (will do this always for now), or connect to one
@@ -79,7 +81,8 @@ def close_DB(connection:sqlite3.Connection):
 def setup_DB(cursor:sqlite3.Cursor):
     # create columns labeled after the 6 parameters
     # name DB after schools. Can't start with numbers
-    # may need to initalize with '?' (?)
+    # first 2 are strings,when entered, must have ?
+    # others can just enter data automatically
     cursor.execute('''CREATE TABLE IF NOT EXISTS schools(
     school_name TEXT NOT NULL,
     school_city TEXT NOT NULL,
@@ -94,25 +97,27 @@ def store_In_DB(api_data, cursor:sqlite3.Cursor):
     # store data in the DB (while loop), use the all_data array?
 
     # use the dictionary tiles to put in DB (no while loop?)
+    # use the ? method, put ? into inputted values and then the dictionary values outside ()
+    # this way, the data is a string and not thought of as a column name
     cursor.execute(f'''INSERT INTO SCHOOLS 
-    (school_name, school_city, student_size_2018, student_size_2017, over_poverty_after_3_years_2017, repayment_overall_2016)
-    VALUES ({api_data['school.name']},
-    {api_data['school.city']},
-    {api_data['2018.student.size']},
-    {api_data['2017.student.size']},
-    {api_data['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line']},
-    {api_data['2016.repayment.3_yr_repayment.overall']}
-    )''')
+    (school_name, school_city, student_size_2018, student_size_2017, over_poverty_after_3_years_2017, 
+    repayment_overall_2016)
+    VALUES (?,?,{api_data['2018.student.size']}, 
+    {api_data['2017.student.size']}, 
+    {api_data['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line']}, 
+    {api_data['2016.repayment.3_yr_repayment.overall']})''',
+                   ({api_data['school.name']}, {api_data['school.city']}))
 
 def main():
     # saves the data to a new table, used this to save into DB
     demo_data, pages = get_data()
     # test to see if >1000 entries. If not, exit
     check_data_entries(demo_data, pages)
+
     '''
-    #these next few lines are for an older version. May still want them in comments
+    # these next few lines are for an older version. May still want them in comments
     print(json.dumps(demo_data, indent=6), file=outfile)
-    #will create a .txt file with 25626 lines. 25626/8 = 3203 entries as expected
+    # will create a .txt file with 25626 lines. 25626/8 = 3203 entries as expected
     outfile.close()
     print("Data has been saved to a file")
     '''
