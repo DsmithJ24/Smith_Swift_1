@@ -9,7 +9,7 @@ DATA_MINIMUM = 1000
 
 # when using debugger, wait a sec for everything to load
 url = "https://api.data.gov/ed/collegescorecard/v1/schools.json?"
-outfile = open(r"api_data.txt", "w")
+# outfile = open(r"api_data.txt", "w")
 
 def get_data():
     # will retrieve:
@@ -88,8 +88,8 @@ def setup_DB(cursor:sqlite3.Cursor):
     school_city TEXT NOT NULL,
     student_size_2018 INTEGER DEFAULT 0,
     student_size_2017 INTEGER DEFAULT 0,
-    over_poverty_after_3_years_2017 REAL DEFAULT 0,
-    repayment_overall_2016 REAL DEFAULT 0
+    over_poverty_after_3_years_2017 INTEGER DEFAULT 0,
+    repayment_overall_2016 INTEGER DEFAULT 0
     );''')
 
 def store_In_DB(api_data, cursor:sqlite3.Cursor):
