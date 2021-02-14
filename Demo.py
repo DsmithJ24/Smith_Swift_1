@@ -91,6 +91,8 @@ def setup_DB(cursor:sqlite3.Cursor):
     over_poverty_after_3_years_2017 INTEGER DEFAULT 0,
     repayment_overall_2016 INTEGER DEFAULT 0
     );''')
+    # what if last column is a TEXT NOT NULL?
+
 
 def store_In_DB(api_data, cursor:sqlite3.Cursor):
     # takes the fetched data and stores in a DB
@@ -99,14 +101,36 @@ def store_In_DB(api_data, cursor:sqlite3.Cursor):
     # use the dictionary tiles to put in DB (no while loop?)
     # use the ? method, put ? into inputted values and then the dictionary values outside ()
     # this way, the data is a string and not thought of as a column name
-    cursor.execute(f'''INSERT INTO SCHOOLS 
-    (school_name, school_city, student_size_2018, student_size_2017, over_poverty_after_3_years_2017, 
-    repayment_overall_2016)
-    VALUES (?,?,{api_data['2018.student.size']}, 
-    {api_data['2017.student.size']}, 
-    {api_data['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line']}, 
-    {api_data['2016.repayment.3_yr_repayment.overall']})''',
-                   ({api_data['school.name']}, {api_data['school.city']}))
+
+    # use while loop
+    # look up list dictionary, use '?' method, check if number data has null (None) set to 0 if is
+    entry = 0
+    while entry < len(api_data):
+        # have list[x][param] in the Tuple (after VALUES) where x is entry and para is the column
+        # check to see if int values are null, start with only the 2018 size for now
+        # maybe just replace value with 0, cannot do elif. Must be ifs
+        if api_data[entry]['2018.student.size'] == None:
+            api_data[entry]['2018.student.size'] = 0
+
+        if api_data[entry]['2017.student.size'] == None:
+            api_data[entry]['2017.student.size'] = 0
+
+        if api_data[entry]['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line'] == None:
+            api_data[entry]['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line'] = 0
+
+        if api_data[entry]['2016.repayment.3_yr_repayment.overall'] == None:
+            api_data[entry]['2016.repayment.3_yr_repayment.overall'] = 0
+
+        # insert data
+        # need 6 ?s
+        cursor.execute(f'''INSERT INTO SCHOOLS (school_name, school_city, 
+        student_size_2018, student_size_2017, over_poverty_after_3_years_2017, repayment_overall_2016)
+        VALUES (?,?,?,?,?,?)''',
+                       (api_data[entry]['school.name'], api_data[entry]['school.city'],
+                        api_data[entry]['2018.student.size'], api_data[entry]['2017.student.size'],
+                        api_data[entry]['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line'],
+                        api_data[entry]['2016.repayment.3_yr_repayment.overall']))
+        entry = entry + 1
 
 def main():
     # saves the data to a new table, used this to save into DB
@@ -124,8 +148,9 @@ def main():
 
     conn, cursor = open_DB("demo_db.sqlite")
     setup_DB(cursor)
-    store_In_DB(demo_data, cursor)
     print(type(conn))
+    store_In_DB(demo_data, cursor)
+    print("Data has been stored in the Database!")
     close_DB(conn)
 
 if __name__ == '__main__':
