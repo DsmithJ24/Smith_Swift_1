@@ -128,6 +128,7 @@ def main():
     # saves the data to a new table, used this to save into DB
     demo_data, pages = get_data()
     # test to see if >1000 entries. If not, exit
+    print("Now checking to see if enough data was retrieved...")
     check_data_entries(demo_data, pages)
 
     '''
@@ -143,6 +144,7 @@ def main():
     print(type(conn))
     store_In_DB(demo_data, cursor)
     print("Data has been stored in the Database!")
+    #may still need a to insert into and check the DB
     close_DB(conn)
 
 if __name__ == '__main__':
