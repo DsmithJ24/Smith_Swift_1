@@ -14,4 +14,11 @@ def test_store_data():
     data = Data.get_data()
     Data.store_In_DB(data, cursor)
 
+    #get the stuff from the DB
+    query = cursor.execute('''SELECT * from schools''').fetchall()
+
+    #now compare to expected values
+    for x in range(len(data)):
+        assert query[x] == data[x]
+
     Data.close_DB(conn)
