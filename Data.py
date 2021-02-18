@@ -5,8 +5,6 @@ import requests
 import sqlite3
 from typing import Tuple
 
-DATA_MINIMUM = 1000
-
 url = "https://api.data.gov/ed/collegescorecard/v1/schools.json?"
 # outfile = open(r"api_data.txt", "w")
 
@@ -53,16 +51,6 @@ def check_page(page):
         pass
     else:
         pass
-
-def check_data_entries(data, pages):
-    print("Total number of pages is", pages)
-    length = len(data)
-    if length < DATA_MINIMUM:
-        print(f"Less than {DATA_MINIMUM} entries! Ending")
-        # end program?
-        exit(-1)
-    else:
-        print(f"Data has {length} entries. Data will now be stored.")
 
 def open_DB(filename: str) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
     # Create a DB if one does not exist (will do this always for now), or connect to one
@@ -115,7 +103,7 @@ def store_In_DB(api_data, cursor:sqlite3.Cursor):
             api_data[entry]['2016.repayment.3_yr_repayment.overall'] = 0
 
         # insert data, need as many ?s as columns
-        cursor.execute(f'''INSERT INTO SCHOOLS (school_name, school_city, 
+        cursor.execute('''INSERT INTO SCHOOLS (school_name, school_city, 
         student_size_2018, student_size_2017, over_poverty_after_3_years_2017, repayment_overall_2016)
         VALUES (?,?,?,?,?,?)''',
                        (api_data[entry]['school.name'], api_data[entry]['school.city'],
@@ -127,9 +115,6 @@ def store_In_DB(api_data, cursor:sqlite3.Cursor):
 def main():
     # saves the data to a new table, used this to save into DB
     demo_data, pages = get_data()
-    # test to see if >1000 entries. If not, exit
-    print("Now checking to see if enough data was retrieved...")
-    check_data_entries(demo_data, pages)
 
     '''
     # these next few lines are for an older version. May still want them in comments
@@ -142,9 +127,10 @@ def main():
     conn, cursor = open_DB("demo_db.sqlite")
     setup_DB(cursor)
     print(type(conn))
+
     store_In_DB(demo_data, cursor)
     print("Data has been stored in the Database!")
-    #may still need a to insert into and check the DB
+
     close_DB(conn)
 
 if __name__ == '__main__':
