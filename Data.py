@@ -113,6 +113,7 @@ def store_In_DB(api_data, cursor:sqlite3.Cursor):
         entry = entry + 1
 
 def main():
+    # workflow comment
     # saves the data to a new table, used this to save into DB
     demo_data, pages = get_data()
 
