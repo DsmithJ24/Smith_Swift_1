@@ -4,7 +4,7 @@ DATA_MINIMUM = 1000
 
 
 def test_data_entries():
-    data = Data.get_excel_data()
+    data = Data.get_api_data()
     assert len(data) >= DATA_MINIMUM
 
 def test_states():
