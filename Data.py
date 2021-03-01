@@ -8,7 +8,7 @@ from typing import Tuple
 
 import pandas as pd
 import os
-# need to add json, pandas, requests, and os to requirements
+
 
 url = "https://api.data.gov/ed/collegescorecard/v1/schools.json?"
 # outfile = open(r"api_data.txt", "w")
