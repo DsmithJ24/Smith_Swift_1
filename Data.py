@@ -19,14 +19,6 @@ filename = "state_M2019_dl.xlsx"
 path = os.path.join(pre, filename)
 
 def get_api_data():
-    # will retrieve:
-    # school name
-    # school city
-    # 2018 student size
-    # 2017 student size
-    # 2017 earnings (3 years after completion.overall count over poverty line)
-    # 2016 repayment (3 year repayment.overall)
-
     all_data = []
     page = 0
     nextPage = True
@@ -34,10 +26,12 @@ def get_api_data():
     # Stops if it hits a false
     while nextPage != False:
         # print(page)
-        # put additional fields after &fields=
         response = requests.get(f"{url}school.degrees_awarded.predominant=2,3&fields=school.name,school.city,"
-                                f"2018.student.size,2017.student.size,2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line,"
-                                f"2016.repayment.3_yr_repayment.overall&api_key={secrets.api_key}&page={page}") #put the api url here
+                                f"2018.student.size,2017.student.size,"
+                                f"2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line,"
+                                f"2016.repayment.3_yr_repayment.overall,school.state,"
+                                f"2016.repayment.repayment_cohort.3_year_declining_balance"
+                                f"&api_key={secrets.api_key}&page={page}")
         if response.status_code != 200:
             print("Error getting data!")
             # do not exit, continue. Don't get stuck at one point. Rather miss data than endless loop
@@ -64,17 +58,14 @@ def get_excel_data():
 
     excel = pd.read_excel(path, engine='openpyxl')
 
-    # keep the desired data
     df = pd.DataFrame(excel, columns=['area_title', 'occ_title', 'o_group', 'tot_emp', 'h_pct25', 'a_pct25', 'occ_code'])
     df = df[df.o_group == 'major']
 
-    # put into json format like api data
     data = df.to_json(orient='records')
     parsed_data = json.loads(data)
     return parsed_data
 
 def check_page(page):
-    # checks to see if api data fills a page, if not then all data has been collected
     if len(page) < 20:
         return False
     elif len(page) > 20:
@@ -107,7 +98,9 @@ def setup_DB_schools(cursor:sqlite3.Cursor):
     student_size_2018 INTEGER DEFAULT 0,
     student_size_2017 INTEGER DEFAULT 0,
     over_poverty_after_3_years_2017 INTEGER DEFAULT 0,
-    repayment_overall_2016 INTEGER DEFAULT 0
+    repayment_overall_2016 INTEGER DEFAULT 0,
+    school_state TEXT NOT NULL,
+    repayment_declining_2016 INTEGER DEFAULT 0
     );''')
 
 def setup_DB_jobs(cursor:sqlite3.Cursor):
@@ -151,13 +144,15 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
         '''
         # have list[x][param] in the Tuple (after VALUES) where x is entry and para is the column
         # insert data, need as many ?s as columns
-        cursor.execute('''INSERT INTO schools(school_name, school_city, 
-        student_size_2018, student_size_2017, over_poverty_after_3_years_2017, repayment_overall_2016)
+        cursor.execute('''INSERT INTO schools(school_name, school_city, school_state, 
+        student_size_2018, student_size_2017, over_poverty_after_3_years_2017, repayment_overall_2016, 
+        repayment_declining_2016)
         VALUES (?,?,?,?,?,?)''',
-                       (adata['school.name'], adata['school.city'],
+                       (adata['school.name'], adata['school.city'], adata['school.state'],
                         adata['2018.student.size'], adata['2017.student.size'],
                         adata['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line'],
-                        adata['2016.repayment.3_yr_repayment.overall']))
+                        adata['2016.repayment.3_yr_repayment.overall'],
+                        adata['2016.repayment.repayment_cohort.3_year_declining_balance']))
 
     for edata in excel_data:
 
@@ -167,8 +162,26 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
             cursor.execute('''INSERT INTO occupation(state_name, occupation_title,
             employment_in_field, hour_salary_25th_percentile, annual_salary_25th_percentile,
             occupation_code) VALUES(?,?,?,?,?,?)''',
-                            (edata['area_title'], edata['occ_title'], edata['tot_emp'],
+                           (edata['area_title'], edata['occ_title'], edata['tot_emp'],
                             edata['h_pct25'], edata['a_pct25'], edata['occ_code']))
+
+# ToDO: Create a GUI for the data
+#  GUI should allow user to update the data or visualize data
+#  will also need a separate file for the window
+
+
+# ToDO: when updating let user choose a file name or just take excel file
+
+# ToDo: For visualization, have two forms of data analysis
+#  1) display data in color coded text format as a list in ascending or descending order (user chooses)
+#  2) render a map to visulaize data
+
+# ToDO: data analysis
+#  user chooses following data for map or text visualization
+#  1) compare numb of college grads in a state with number of jobs in state that expect college education.
+#  For this remove professions with occ_code beginning with 30-39 or 40-49
+#  2) compare 3 year graduate cohort declining balance to the 25% salary in the state
+
 
 def main():
     # check to see if DB file exists. Delete it to prevent duplicate data
