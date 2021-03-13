@@ -35,7 +35,7 @@ class SprintWindow(QWidget):
 
     def put_data_in_list(self, data: List[Dict]):
         for item in data:
-            display_item = f"{item['state_name']}\t\t{item['median_income']}"
+            display_item = f"{item['state_name']}\t\t{item['hourly_salary']}"
             list_item = QListWidgetItem(display_item, listview=self.list_control)
 
     def update_data(self):

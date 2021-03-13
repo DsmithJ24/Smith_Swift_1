@@ -19,24 +19,24 @@ def get_data() -> List[Dict]:
     worksheet = workbook_file.active
     data_list = []
     for current_row in worksheet.rows:
-        state_cell = current_row[0]
+        state_cell = current_row[1]
         state_name = state_cell.value
-        median_income2018 = current_row[1].value
-        if not isinstance(median_income2018, numbers.Number):
+        hourly_salary_25_percentage = current_row[19].value
+        if not isinstance(hourly_salary_25_percentage, numbers.Number):
             continue
-        record = {"state_name": state_name, "median_income": median_income2018}
+        record = {"state_name": state_name, "hourly_salary": hourly_salary_25_percentage}
         data_list.append(record)
     return data_list
 
 
 def get_key(value:dict):
-    return value["median_income"]
+    return value["hourly_salary"]
 
 
 # ToDo: next two funcs may be changed and/or put in Data.py
 def main():
     data = get_data()
-    data.sort(key=get_data)
+    data.sort(key=get_key)  # sorts from highest salary to lowest
     display_data(data)
 
 
