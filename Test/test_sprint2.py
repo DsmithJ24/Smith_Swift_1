@@ -7,6 +7,7 @@ def test_data_entries():
     data = Data.get_api_data()
     assert len(data) >= DATA_MINIMUM
 
+
 def test_states():
     data = Data.get_excel_data()
     states = []
@@ -19,6 +20,7 @@ def test_states():
     assert len(states) >= 50
     # includes territories +DC too
     assert len(states) <= 54
+
 
 def test_table_names():
     # test to see if new table exists
@@ -38,6 +40,7 @@ def test_table_names():
     test_res = res[1]
     assert test_res[0] == 'occupation'
 
+
 def test_store_data():
     # this is a modified version of the shared answer for Sprint 2 with the additional field for
     # excel data since the store function is used for both and takes both parameters, test from
@@ -50,10 +53,11 @@ def test_store_data():
 
     # make a test entry to put into the DB
     # need Name, City, 2018 size, 2017 size, 2017 earnings, 2016 repayment
-    test_api_data = [{'school.name': 'Test University', 'school.city': 'Boston', '2018.student.size': 1000,
-                  '2017.student.size': 900,
-                  '2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line': 456,
-                  '2016.repayment.3_yr_repayment.overall': 4004}]
+    test_api_data = [{'school.name': 'Test University', 'school.city': 'Boston', 'school.state': 'Massachusetts',
+                      '2018.student.size': 1000, '2017.student.size': 900,
+                      '2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line': 456,
+                      '2016.repayment.3_yr_repayment.overall': 4004,
+                      '2016.repayment.repayment_cohort.3_year_declining_balance': 2000}]
 
     # make a test entry for the jobs table and put into DB
     test_excel_data = [{'area_title': 'Mass', 'occ_title': 'Management', 'o_group': 'major', 'tot_emp': 7000,

@@ -15,16 +15,18 @@ url = "https://api.data.gov/ed/collegescorecard/v1/schools.json?"
 
 # prevents error reading the file
 pre = os.path.dirname(os.path.realpath(__file__))
+
+# ToDo this value will be changed, don't make it a global
 filename = "state_M2019_dl.xlsx"
 path = os.path.join(pre, filename)
 
 def get_api_data():
     all_data = []
     page = 0
-    nextPage = True
+    next_page = True
 
     # Stops if it hits a false
-    while nextPage != False:
+    while next_page != False:
         # print(page)
         response = requests.get(f"{url}school.degrees_awarded.predominant=2,3&fields=school.name,school.city,"
                                 f"2018.student.size,2017.student.size,"
@@ -42,7 +44,7 @@ def get_api_data():
         page_of_data = response.json()
         page_of_school_data = page_of_data['results']
         all_data.extend(page_of_school_data)
-        nextPage = check_page(page_of_school_data)
+        next_page = check_page(page_of_school_data)
         page=page+1
     # print("Total number of pages is", page)
     return all_data
@@ -147,7 +149,7 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
         cursor.execute('''INSERT INTO schools(school_name, school_city, school_state, 
         student_size_2018, student_size_2017, over_poverty_after_3_years_2017, repayment_overall_2016, 
         repayment_declining_2016)
-        VALUES (?,?,?,?,?,?)''',
+        VALUES (?,?,?,?,?,?,?,?)''',
                        (adata['school.name'], adata['school.city'], adata['school.state'],
                         adata['2018.student.size'], adata['2017.student.size'],
                         adata['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line'],
@@ -168,13 +170,6 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
 # ToDO: Create a GUI for the data
 #  GUI should allow user to update the data or visualize data
 #  will also need a separate file for the window
-
-
-# ToDO: when updating let user choose a file name or just take excel file
-
-# ToDo: For visualization, have two forms of data analysis
-#  1) display data in color coded text format as a list in ascending or descending order (user chooses)
-#  2) render a map to visulaize data
 
 # ToDO: data analysis
 #  user chooses following data for map or text visualization
