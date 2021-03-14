@@ -16,10 +16,6 @@ url = "https://api.data.gov/ed/collegescorecard/v1/schools.json?"
 # prevents error reading the file
 pre = os.path.dirname(os.path.realpath(__file__))
 
-# ToDo this value will be changed, don't make it a global
-filename = "state_M2019_dl.xlsx"
-path = os.path.join(pre, filename)
-
 def get_api_data():
     all_data = []
     page = 0
@@ -49,7 +45,7 @@ def get_api_data():
     # print("Total number of pages is", page)
     return all_data
 
-def get_excel_data():
+def get_excel_data(name:str):
     # area_type 2 is for state, 3 is for territory
     # o group must be 'major', bad options are total and detailed
 
@@ -57,6 +53,9 @@ def get_excel_data():
     # state, occupation major title, total employment in that field in that state
     # 25th percentile salary (assume college grads in lower 25%) for field both hourly AND annually
     # and occupation code
+    # ToDo this value will be changed, don't make it a global
+    filename = name
+    path = os.path.join(pre, filename)
 
     excel = pd.read_excel(path, engine='openpyxl')
 
@@ -178,7 +177,7 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
 #  2) compare 3 year graduate cohort declining balance to the 25% salary in the state
 
 
-def main():
+def main(file_name:str):
     # check to see if DB file exists. Delete it to prevent duplicate data
     if os.path.exists("sprint_db.sqlite"):
         os.remove("sprint_db.sqlite")
@@ -187,7 +186,7 @@ def main():
 
     print("Api data retrieved!")
 
-    excel_data = get_excel_data()
+    excel_data = get_excel_data(file_name)
     print("Excel data retrieved! Storing data...")
 
     '''

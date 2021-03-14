@@ -1,4 +1,3 @@
-import openpyxl
 import PySide6.QtWidgets
 import sys
 import Data
@@ -22,7 +21,8 @@ def get_data() -> List[Dict]:
     #  Later in project, make it so the wb name is a variable that takes an input.
     #  This data will be from sprint 3 Database, not the contents of the file itself
 
-    Data.main()
+    # ToDo: pass a file name into this
+    Data.main("state_M2019_dl.xlsx")
 
     conn = sqlite3.connect('sprint_db.sqlite')
     conn.row_factory = sqlite3.Row
@@ -34,34 +34,44 @@ def get_data() -> List[Dict]:
     conn.commit()
     conn.close()
 
-    schools = json.dumps([dict(ix) for ix in school_rows])
-    jobs = json.dumps([dict(iy) for iy in job_rows])
+    #schools = json.loads(school_rows)
+    #jobs = json.loads(job_rows)
 
     # ToDo: need most recent college grads and declining balance from school table
     #  and jobs (occ_code not starting with 30-39 or 40-49) plus 25% percent salary from jobs table
 
-    workbook_file = openpyxl.load_workbook("state_M2019_dl.xlsx")
-    worksheet = workbook_file.active
     data_list = []
-    for current_row in worksheet.rows:
-        state_cell = current_row[1]
-        state_name = state_cell.value
-        hourly_salary_25_percentage = current_row[19].value
-        if not isinstance(hourly_salary_25_percentage, numbers.Number):
+
+    for sdata in school_rows:
+        size_total = sdata['student_size_2018']
+        #size_total = size_cell.value
+        if not isinstance(size_total, numbers.Number):
             continue
-        record = {"state_name": state_name, "hourly_salary": hourly_salary_25_percentage}
+
+        declining_balance = sdata['repayment_declining_2016']
+        if not isinstance(declining_balance, numbers.Number):
+            continue
+        record = {"total students": size_total, "3 year balance": declining_balance}
         data_list.append(record)
+
+    # ToDO these dont seem to be added to the datalist....
+    for jdata in job_rows:
+        ooc_codes = jdata['occupation_code']
+        hourly_salary = jdata['hour_salary_25th_percentile']
+        record = {"occ_code": ooc_codes, "hourly_salary": hourly_salary}
+        data_list.append(record)
+
     return data_list
 
-
+'''
 def get_key(value:dict):
     return value["hourly_salary"]
-
+'''
 
 # ToDo: next two funcs may be changed and/or put in Data.py
 def main():
     data = get_data()
-    data.sort(key=get_key)  # sorts from highest salary to lowest
+    # data.sort(key=get_key)  # sorts from highest salary to
     display_data(data)
 
 

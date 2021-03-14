@@ -59,7 +59,7 @@ class MainWindow(QWidget):
         self.put_data_in_list(self.data)
         display_list.resize(400, 350)
 
-        self.setGeometry(100, 100, 400, 500)
+        self.setGeometry(100, 100, 600, 500)
 
         quit_button = QPushButton("Exit", self)
         quit_button.clicked.connect(QApplication.instance().quit)
@@ -79,7 +79,8 @@ class MainWindow(QWidget):
 
     def put_data_in_list(self, data: List[Dict]):
         for item in data:
-            display_item = f"{item['state_name']}\t\t{item['hourly_salary']}"
+            display_item = f"{item['total students']}\t\t{item['3 year balance']}\t\t{item['occ_code']}" \
+                           f"\t\t{item['hourly salary']}"
             list_item = QListWidgetItem(display_item, listview=self.list_control)
 
     def update_data(self):
