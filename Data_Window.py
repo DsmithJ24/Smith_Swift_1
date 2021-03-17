@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QMessageBox, QWidget, QPushButton, QListWidget, QApplication, QListWidgetItem, QLineEdit
+from PySide6.QtWidgets import QMessageBox, QWidget, QPushButton, QListWidget, QApplication, QListWidgetItem, QLineEdit, \
+    QLabel
 from typing import List, Dict
 import Data_GUI
 
@@ -9,13 +10,16 @@ class SearchWindow(QWidget):
         self.from_main = main_self
         self.setup_window()
         self.file_name = ""
+        self.message_to_user = None
 
     def setup_window(self):
         self.setWindowTitle("Select Data")
         self.setGeometry(150, 150, 300, 100)
+        self.message_to_user = QLabel("Please enter a file name", self)
+        self.message_to_user.move(25, 15)
         search_bar = QLineEdit(self)
         search_bar.resize(250, 25)
-        search_bar.move(25, 25)
+        search_bar.move(25, 35)
         search_bar.textChanged.connect(self.save_file_name)
 
         quit_button = QPushButton("Exit", self)
@@ -105,7 +109,6 @@ class MainWindow(QWidget):
         self.put_data_in_list(self.data)
         self.display_list.resize(400, 350)
         self.display_list.show() # show this widget, not the whole thing
-        print("Got here")
 
     def data_visualization(self):
         message_box = QMessageBox(self)

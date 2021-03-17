@@ -103,7 +103,9 @@ def test_store_data():
     # this works
     cursor.execute('''SELECT state_name FROM occupation''')
     res = cursor.fetchall()
+    #get a lsit of states
     test_eres = res[0]
+    #now look into the first entry on the states list
     assert test_eres[0] == 'Mass'
     test_eres = res[1]
     assert test_eres[0] == 'Iowa'
