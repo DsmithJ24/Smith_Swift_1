@@ -55,17 +55,6 @@ def get_data() -> List[Dict]:
     #  and jobs (occ_code not starting with 30-39 or 40-49)
 
     data_list = []
-    '''
-
-    for entries in school_rows:
-        if entries['school_state'] in states:
-            pass
-        else:
-            states.append(entries['school_state'])
-    states.sort()
-
-    # map states to abbreviations
-    '''
 
     states = [{'State': 'Alabama', 'Abbreviation': 'AK'}, {'State': 'Alaska', 'Abbreviation': 'AL'},
               {'State': 'Arkansas', 'Abbreviation': 'AR'}, {'State': 'American Samoa', 'Abbreviation': 'AS'},
@@ -100,9 +89,8 @@ def get_data() -> List[Dict]:
 
     # terriories: VI- virgin islands, PW-palau, PR-puerto rico, MP- mariana islands,
     # MH- marshall islands, GU-guam, FM-micronesia, DC- washDC, AS- american samoa
-    graduate_list = []
-    # states outside, school_states inside
 
+    graduate_total = []
     for y in range(len(states)):
         graduates = 0
         for x in range(len(school_rows)):
@@ -113,12 +101,37 @@ def get_data() -> List[Dict]:
                 if school_graduates is None:
                     school_graduates = 0
                 graduates = school_graduates + graduates
-        graduate_list.append(graduates)
+        graduate_total.append(graduates)
 
-    print(graduate_list)
-    '''    
-    # ToDO these dont seem to be added to the datalist....
-    for jdata in job_rows:
+    all_of_states = []
+    for s in states:
+        all_of_states.append(s['State'])
+
+    excel_states = []
+    for y in job_rows:
+        excel_states.append(y['state_name'])
+
+    states_to_add = []
+    for i in range(len(states)):
+        if all_of_states[i] not in excel_states:
+            missing_state = all_of_states[i]
+            states_to_add.append(missing_state)
+
+    jobs_total = []
+    for y in range(len(states)):
+        jobs = 0
+        for x in range(len(job_rows)):
+            if states[y]['State'] == job_rows[x]['state_name'] or states[y]['Abbreviation'] ==\
+                    job_rows[x]['state_name']:
+                if job_rows[x]['occupation_code'][0:1] != '3' or job_rows[x]['occupation_code'][0:1] != '4':
+                    # ToDo: change stuff in Data.py so no nulls are saved. Used above lines as reference
+                    occupation_jobs = job_rows[x]['employment_in_field']
+                    if occupation_jobs is None:
+                        occupation_jobs = 0
+                    jobs = occupation_jobs + jobs
+        jobs_total.append(jobs)
+
+    '''
         ooc_codes = jdata['occupation_code']
         hourly_salary = jdata['hour_salary_25th_percentile']
         job_state = jdata['state_name']
@@ -126,12 +139,13 @@ def get_data() -> List[Dict]:
         job_list.append(record)
     '''
 
+    '''
     test_list = []
 
     record = {"total students": 100, "3 year balance": 3000, "occ_code": 45-679, "hourly salary": 15}
     test_list.append(record)
     return test_list
-
+    '''
 
 def get_key(value:dict):
     return value["hourly_salary"]
