@@ -9,6 +9,7 @@ from typing import Tuple
 import pandas as pd
 import os
 
+from typing import List, Dict
 
 url = "https://api.data.gov/ed/collegescorecard/v1/schools.json?"
 # outfile = open(r"api_data.txt", "w")
@@ -119,14 +120,27 @@ def setup_DB_jobs(cursor:sqlite3.Cursor):
     occupation_code TEXT NOT NULL
     );''')
 
-def check_data(data: int):
+def check_data(data: List[Dict]):
     # checks to make sure data with expected integers have 0s instead of None
     # check to see if int values are null
     # maybe just replace value with 0, cannot do elif. Must be ifs
+    for i in range(len(data)):
+        if data[i]['2018.student.size'] is None:
+            data[i]['2018.student.size'] = 0
 
-    if data == None:
-        data = 0
-        return data
+        if data[i]['2017.student.size'] is None:
+            data[i]['2017.student.size'] = 0
+
+        if data[i]['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line'] is None:
+            data[i]['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line'] = 0
+
+        if data[i]['2016.repayment.3_yr_repayment.overall'] is None:
+            data[i]['2016.repayment.3_yr_repayment.overall'] = 0
+
+        if data[i]['2016.repayment.repayment_cohort.3_year_declining_balance'] is None:
+            data[i]['2016.repayment.repayment_cohort.3_year_declining_balance'] = 0
+
+    return data
 
 def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
     # use the dictionary tiles to put in DB
@@ -134,15 +148,11 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
     # this way, the data is a string and not thought of as a column name
 
     # use for loop
+    check_data(api_data)
     for adata in api_data:
         # first check to see if any unwanted Nulls
 
-        '''
-        check_data(adata['2018.student.size'])
-        check_data(adata['2017.student.size'])
-        check_data(adata['2017.earnings.3_yrs_after_completion.overall_count_over_poverty_line'])
-        check_data('2016.repayment.3_yr_repayment.overall')
-        '''
+        # check_data(adata)
         # have list[x][param] in the Tuple (after VALUES) where x is entry and para is the column
         # insert data, need as many ?s as columns
         cursor.execute('''INSERT INTO schools(school_name, school_city, school_state, 

@@ -52,9 +52,10 @@ def get_data() -> List[Dict]:
     #jobs = json.loads(job_rows)
 
     # ToDo: get the number of all college graduates (student_size/4) from a state
-    #  and jobs (occ_code not starting with 30-39 or 40-49)
+    #  and jobs (occ_code not starting with 30-39 or 40-49).
+    #  Will also need annual salary
 
-    data_list = []
+    data = []
 
     states = [{'State': 'Alabama', 'Abbreviation': 'AK'}, {'State': 'Alaska', 'Abbreviation': 'AL'},
               {'State': 'Arkansas', 'Abbreviation': 'AR'}, {'State': 'American Samoa', 'Abbreviation': 'AS'},
@@ -132,14 +133,6 @@ def get_data() -> List[Dict]:
         jobs_total.append(jobs)
 
     '''
-        ooc_codes = jdata['occupation_code']
-        hourly_salary = jdata['hour_salary_25th_percentile']
-        job_state = jdata['state_name']
-        record = {"state": job_state, "occ_code": ooc_codes, "hourly_salary": hourly_salary}
-        job_list.append(record)
-    '''
-
-    '''
     test_list = []
 
     record = {"total students": 100, "3 year balance": 3000, "occ_code": 45-679, "hourly salary": 15}
@@ -147,8 +140,25 @@ def get_data() -> List[Dict]:
     return test_list
     '''
 
+    for size in range(len(states)):
+        record = {"state": all_of_states[size], "graduates": graduate_total[size], "jobs": jobs_total[size]}
+        data.append(record)
+
+    return data
+
+
 def get_key(value:dict):
-    return value["hourly_salary"]
+    return value["jobs"]
+
+
+def sort_data_increasing(data: List[Dict]):
+    data.sort(key=get_key)
+    return data
+
+
+def sort_data_decreasing(data: List[Dict]):
+    data.sort(reverse=True, key=get_key)
+    return data
 
 
 # ToDo: next two funcs may be changed and/or put in Data.py

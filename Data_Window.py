@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QMessageBox, QWidget, QPushButton, QListWidget, QApplication, QListWidgetItem, QLineEdit, \
-    QLabel
+from PySide6.QtGui import QBrush, QColor
+from PySide6.QtWidgets import QMessageBox, QWidget, QPushButton, QListWidget, QApplication, QListWidgetItem,\
+    QLineEdit, QLabel
 from typing import List, Dict
 import Data_GUI
 
@@ -44,7 +45,7 @@ class SearchWindow(QWidget):
 
     def show_good_message(self):
         # ToDo: do the get data func in Data_GUI and pass in the file name
-        MainWindow.show_data(self.from_main)
+        MainWindow.get_data(self.from_main)
         message_box = QMessageBox(self)
         message_box.setWindowTitle("Success")
         message_box.setText("Data Retrieved.")
@@ -75,24 +76,36 @@ class MainWindow(QWidget):
         quit_button = QPushButton("Exit", self)
         quit_button.clicked.connect(QApplication.instance().quit)
         quit_button.resize(quit_button.sizeHint())
-        quit_button.move(300, 400)
+        quit_button.move(300, 450)
 
         update_data_button = QPushButton("Update Data", self)
         update_data_button.resize(update_data_button.sizeHint())
-        update_data_button.move(50, 400)
+        update_data_button.move(50, 450)
         update_data_button.clicked.connect(self.update_data)
 
         run_visualization = QPushButton("Data Visualization", self)
         run_visualization.resize(run_visualization.sizeHint())
-        run_visualization.move(150, 400)
+        run_visualization.move(150, 450)
         run_visualization.clicked.connect(self.data_visualization)
+
+        increasing_order_button = QPushButton("Order by Ascending Job Numbers", self)
+        increasing_order_button.resize(increasing_order_button.sizeHint())
+        increasing_order_button.move(100, 400)
+        increasing_order_button.clicked.connect(self.increasing_order)
+
+        decreasing_order_button = QPushButton("Order by Descending Job Numbers", self)
+        decreasing_order_button.resize(decreasing_order_button.sizeHint())
+        decreasing_order_button.move(300, 400)
+        decreasing_order_button.clicked.connect(self.decreasing_order)
         self.show()
 
     def put_data_in_list(self, data: List[Dict]):
+        data_index = 0
         for item in data:
-            display_item1 = f"{item['total students']}\t\t{item['3 year balance']}\t\t{item['occ_code']}" \
-                            f"\t\t{item['hourly salary']}"
-            list_item1 = QListWidgetItem(display_item1, listview=self.list_control)
+            display_item = f"{item['state']}\t\t{item['graduates']}\t\t{item['jobs']}"
+            list_item = QListWidgetItem(display_item, listview=self.list_control)
+            self.color_data(list_item, data_index)
+            data_index = data_index + 1
 
     def update_data(self):
         if self.reference_window is None:
@@ -102,19 +115,54 @@ class MainWindow(QWidget):
             self.reference_window.close()
             self.reference_window = None
 
-    def show_data(self):
+    def get_data(self):
         self.data = Data_GUI.display_data()
-        self.display_list = QListWidget(self)
-        self.list_control = self.display_list
-        self.put_data_in_list(self.data)
-        self.display_list.resize(400, 350)
-        self.display_list.show() # show this widget, not the whole thing
 
     def data_visualization(self):
+        if self.data is None:
+            self.show_error_message("No data Available. Please update data!")
+
+        else:
+            self.display_list = QListWidget(self)
+            self.list_control = self.display_list
+            self.put_data_in_list(self.data)
+            self.display_list.resize(600, 350)
+            self.display_list.show() # show this widget, not the whole thing
+
+    def show_error_message(self, error_message: str):
         message_box = QMessageBox(self)
-        message_box.setWindowTitle("Message")
-        message_box.setText("Visualization complete!")
+        message_box.setWindowTitle("Error")
+        message_box.setText(error_message)
         message_box.show()
+
+    def color_data(self, entry: QListWidgetItem, entry_number: int):
+        colors = ["red", "blue", "orange", "green", "pink", "yellow", "purple", "brown", "gray", "black"]
+        end_digit = entry_number % 10
+        entry.setForeground(QBrush(QColor(colors[end_digit])))
+
+    def increasing_order(self):
+        print(self.data)
+        if self.data is None:
+            self.show_error_message("No data Available. Please update data!")
+
+        elif self.display_list is None:
+            self.show_error_message("Please visualize the data first!")
+
+        else:
+            self.data = Data_GUI.sort_data_increasing(self.data)
+            self.data_visualization()
+
+    def decreasing_order(self):
+        print(self.data)
+        if self.data is None:
+            self.show_error_message("No data Available. Please update data!")
+
+        elif self.display_list is None:
+            self.show_error_message("Please visualize the data first!")
+
+        else:
+            self.data = Data_GUI.sort_data_decreasing(self.data)
+            self.data_visualization()
 
     # ToDO: Create a GUI for the data
     #  GUI should allow user to update the data or visualize data
