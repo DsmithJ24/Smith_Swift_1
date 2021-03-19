@@ -28,5 +28,14 @@ schools table and three for the occupation table. The test will then check to se
 table has been correctly saved. The Excel part of the test will check to see if only 2 of the 3 entries
 have been saved. The test will then check test to make sure the correct data has been saved.
 
-The only thing that does not work is checking the api data for interger values that should be 0
-instead of null.
+A simple GUI has been added that will take allow the user to enter the name of an excel file and use that to
+read data from to save in the database. Once read, the user can display the data in the GUI in
+a Table-like list. The user can see data of the total graduates in a state from 2018 vs the total jobs
+in that state from 2019. From left to right, the data is 'State Name', 'Graduates',
+'Jobs', and 'Jobs minus Graduates'. The user can also view data comparing the percentage of students not paying
+student loans and the annual salary for the state in 2019. The data here from left to right is 'State', 'School Name',
+'Job title', and 'Bad Repayment for the Job' The user can display these values in
+ascending or descending order.
+
+Unfortuanatley, the mapping was not done, nor were tests for the GUI itself. I underestimated the time
+it would take to complete this and I did not have time to get to these requirements.

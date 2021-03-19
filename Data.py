@@ -61,8 +61,7 @@ def get_excel_data(name:str):
     excel = pd.read_excel(path, engine='openpyxl')
 
     df = pd.DataFrame(excel, columns=['area_title', 'occ_title', 'o_group', 'tot_emp', 'h_pct25', 'a_pct25', 'occ_code'])
-    df = df[df.o_group == 'major']
-
+    df = df[df.o_group != 'detailed']
     data = df.to_json(orient='records')
     parsed_data = json.loads(data)
     return parsed_data
@@ -120,7 +119,7 @@ def setup_DB_jobs(cursor:sqlite3.Cursor):
     occupation_code TEXT NOT NULL
     );''')
 
-def check_data(data: List[Dict]):
+def check_api_data(data: List[Dict]):
     # checks to make sure data with expected integers have 0s instead of None
     # check to see if int values are null
     # maybe just replace value with 0, cannot do elif. Must be ifs
@@ -140,7 +139,20 @@ def check_data(data: List[Dict]):
         if data[i]['2016.repayment.repayment_cohort.3_year_declining_balance'] is None:
             data[i]['2016.repayment.repayment_cohort.3_year_declining_balance'] = 0
 
-    return data
+    #return data
+
+def check_excel_data(data: List[Dict]):
+    for i in range(len(data)):
+        if data[i]['tot_emp'] is None:
+            data[i]['tot_emp'] = 0
+
+        if data[i]['h_pct25'] is None:
+            data[i]['h_pct25'] = 0.0
+
+        if data[i]['a_pct25'] is None:
+            data[i]['a_pct25'] = 0
+
+    #return data
 
 def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
     # use the dictionary tiles to put in DB
@@ -148,7 +160,7 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
     # this way, the data is a string and not thought of as a column name
 
     # use for loop
-    check_data(api_data)
+    check_api_data(api_data)
     for adata in api_data:
         # first check to see if any unwanted Nulls
 
@@ -169,7 +181,7 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
 
         # want one last check to see if any non major o_groups have snuck in
         # this check just wiped the data...
-        if edata['o_group'] == 'major':
+        if edata['o_group'] != 'detailed':
             cursor.execute('''INSERT INTO occupation(state_name, occupation_title,
             employment_in_field, hour_salary_25th_percentile, annual_salary_25th_percentile,
             occupation_code) VALUES(?,?,?,?,?,?)''',
@@ -187,8 +199,7 @@ def store_In_DB(api_data: list, excel_data: list, cursor:sqlite3.Cursor):
 #  2) compare 3 year graduate cohort declining balance to the 25% salary in the state
 
 
-def main(file_name:str):
-    # check to see if DB file exists. Delete it to prevent duplicate data
+def main(file_name: str):
     if os.path.exists("sprint_db.sqlite"):
         os.remove("sprint_db.sqlite")
 
@@ -209,7 +220,6 @@ def main(file_name:str):
     # outfile.close()
     '''
 
-
     conn, cursor = open_DB("sprint_db.sqlite")
     setup_DB_schools(cursor)
     setup_DB_jobs(cursor)
@@ -220,6 +230,7 @@ def main(file_name:str):
     close_DB(conn)
 
 
+
 if __name__ == '__main__':
-    main()
+    main("state_M2019_dl.xlsx")
 

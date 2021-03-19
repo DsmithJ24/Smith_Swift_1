@@ -1,6 +1,6 @@
 from PySide6.QtGui import QBrush, QColor
-from PySide6.QtWidgets import QMessageBox, QWidget, QPushButton, QListWidget, QApplication, QListWidgetItem,\
-    QLineEdit, QLabel
+from PySide6.QtWidgets import QMessageBox, QWidget, QPushButton, QListWidget, QApplication, QListWidgetItem, \
+    QLineEdit, QLabel, QTableWidget, QTableWidgetItem
 from typing import List, Dict
 import Data_GUI
 
@@ -44,8 +44,8 @@ class SearchWindow(QWidget):
             self.show_error_message()
 
     def show_good_message(self):
-        # ToDo: do the get data func in Data_GUI and pass in the file name
-        MainWindow.get_data(self.from_main)
+        Data_GUI.initialize_db(self.file_name)
+        MainWindow.get_data(self.from_main, self.file_name)
         message_box = QMessageBox(self)
         message_box.setWindowTitle("Success")
         message_box.setText("Data Retrieved.")
@@ -61,10 +61,10 @@ class SearchWindow(QWidget):
 
 
 class MainWindow(QWidget):
-    #def __init__(self, data_to_show):
     def __init__(self):
         super().__init__()
-        self.data = None
+        self.job_data = None
+        self.repayment_data = None
         self.list_control = None
         self.reference_window = None
         self.setup_window()
@@ -72,37 +72,62 @@ class MainWindow(QWidget):
 
     def setup_window(self):
         self.setWindowTitle("Data_Window")
-        self.setGeometry(100, 100, 600, 500)
+        self.setGeometry(100, 100, 600, 550)
         quit_button = QPushButton("Exit", self)
         quit_button.clicked.connect(QApplication.instance().quit)
         quit_button.resize(quit_button.sizeHint())
-        quit_button.move(300, 450)
+        quit_button.move(500, 500)
 
         update_data_button = QPushButton("Update Data", self)
         update_data_button.resize(update_data_button.sizeHint())
-        update_data_button.move(50, 450)
+        update_data_button.move(50, 500)
         update_data_button.clicked.connect(self.update_data)
 
-        run_visualization = QPushButton("Data Visualization", self)
-        run_visualization.resize(run_visualization.sizeHint())
-        run_visualization.move(150, 450)
-        run_visualization.clicked.connect(self.data_visualization)
+        run_job_visualization = QPushButton("Job Visualization", self)
+        run_job_visualization.resize(run_job_visualization.sizeHint())
+        run_job_visualization.move(150, 500)
+        run_job_visualization.clicked.connect(self.data_visualization_jobs)
 
-        increasing_order_button = QPushButton("Order by Ascending Job Numbers", self)
-        increasing_order_button.resize(increasing_order_button.sizeHint())
-        increasing_order_button.move(100, 400)
-        increasing_order_button.clicked.connect(self.increasing_order)
+        run_repayment_visualization = QPushButton("Repayment Visualization", self)
+        run_repayment_visualization.resize(run_repayment_visualization.sizeHint())
+        run_repayment_visualization.move(300, 500)
+        run_repayment_visualization.clicked.connect(self.data_visualization_repayment)
 
-        decreasing_order_button = QPushButton("Order by Descending Job Numbers", self)
-        decreasing_order_button.resize(decreasing_order_button.sizeHint())
-        decreasing_order_button.move(300, 400)
-        decreasing_order_button.clicked.connect(self.decreasing_order)
+        increasing_job_button = QPushButton("Order by Ascending Job Numbers", self)
+        increasing_job_button.resize(increasing_job_button.sizeHint())
+        increasing_job_button.move(100, 400)
+        increasing_job_button.clicked.connect(self.increasing_order_job)
+
+        decreasing_job_button = QPushButton("Order by Descending Job Numbers", self)
+        decreasing_job_button.resize(decreasing_job_button.sizeHint())
+        decreasing_job_button.move(300, 400)
+        decreasing_job_button.clicked.connect(self.decreasing_order_job)
+
+        increasing_repayment_button = QPushButton("Order by Ascending Repayment Numbers", self)
+        increasing_repayment_button.resize(increasing_repayment_button.sizeHint())
+        increasing_repayment_button.move(50, 450)
+        increasing_repayment_button.clicked.connect(self.increasing_order_repayment)
+
+        decreasing_repayment_button = QPushButton("Order by Descending Repayment Numbers", self)
+        decreasing_repayment_button.resize(decreasing_repayment_button.sizeHint())
+        decreasing_repayment_button.move(300, 450)
+        decreasing_repayment_button.clicked.connect(self.decreasing_order_repayment)
         self.show()
 
-    def put_data_in_list(self, data: List[Dict]):
+    def put_job_data_in_gui(self, data: List[Dict]):
+        data_index = 0
+
+        for item in data:
+            display_item = f"{item['state']}\t\t{item['graduates']}\t\t{item['jobs']}\t\t{item['jobs_vs_graduates']}"
+            list_item = QListWidgetItem(display_item, listview=self.list_control)
+            self.color_data(list_item, data_index)
+            data_index = data_index + 1
+
+    def put_repayment_data_in_gui(self, data: List[Dict]):
         data_index = 0
         for item in data:
-            display_item = f"{item['state']}\t\t{item['graduates']}\t\t{item['jobs']}"
+            display_item = f"{item['state']}\t\t{item['school_name']}\t\t{item['job_title']}" \
+                           f"\t\t{item['bad_repayment_odds']}"
             list_item = QListWidgetItem(display_item, listview=self.list_control)
             self.color_data(list_item, data_index)
             data_index = data_index + 1
@@ -115,19 +140,33 @@ class MainWindow(QWidget):
             self.reference_window.close()
             self.reference_window = None
 
-    def get_data(self):
-        self.data = Data_GUI.display_data()
+    def get_data(self, file_name):
+        self.job_data, self.repayment_data = Data_GUI.display_data('sprint_db.sqlite')
 
-    def data_visualization(self):
-        if self.data is None:
+    def data_visualization_jobs(self):
+        if self.job_data is None:
             self.show_error_message("No data Available. Please update data!")
 
         else:
-            self.display_list = QListWidget(self)
-            self.list_control = self.display_list
-            self.put_data_in_list(self.data)
+            self.put_in_QList()
+            self.put_job_data_in_gui(self.job_data)
             self.display_list.resize(600, 350)
             self.display_list.show() # show this widget, not the whole thing
+
+    def data_visualization_repayment(self):
+        print(self.repayment_data)
+        if self.repayment_data is None:
+            self.show_error_message("No data Available. Please update data!")
+
+        else:
+            self.put_in_QList()
+            self.put_repayment_data_in_gui(self.repayment_data)
+            self.display_list.resize(600, 350)
+            self.display_list.show() # show this widget, not the whole thing
+
+    def put_in_QList(self):
+        self.display_list = QListWidget(self)
+        self.list_control = self.display_list
 
     def show_error_message(self, error_message: str):
         message_box = QMessageBox(self)
@@ -135,38 +174,55 @@ class MainWindow(QWidget):
         message_box.setText(error_message)
         message_box.show()
 
+    # def color_data(self, entry: QListWidgetItem, entry_number: int):
     def color_data(self, entry: QListWidgetItem, entry_number: int):
         colors = ["red", "blue", "orange", "green", "pink", "yellow", "purple", "brown", "gray", "black"]
         end_digit = entry_number % 10
         entry.setForeground(QBrush(QColor(colors[end_digit])))
 
-    def increasing_order(self):
-        print(self.data)
-        if self.data is None:
+    def increasing_order_job(self):
+        if self.job_data is None:
             self.show_error_message("No data Available. Please update data!")
 
         elif self.display_list is None:
             self.show_error_message("Please visualize the data first!")
 
         else:
-            self.data = Data_GUI.sort_data_increasing(self.data)
-            self.data_visualization()
+            self.job_data = Data_GUI.sort_jobs_increasing(self.job_data)
+            self.data_visualization_jobs()
 
-    def decreasing_order(self):
-        print(self.data)
-        if self.data is None:
+    def increasing_order_repayment(self):
+        if self.repayment_data is None:
             self.show_error_message("No data Available. Please update data!")
 
         elif self.display_list is None:
             self.show_error_message("Please visualize the data first!")
 
         else:
-            self.data = Data_GUI.sort_data_decreasing(self.data)
-            self.data_visualization()
+            self.repayment_data = Data_GUI.sort_repayment_increasing(self.repayment_data)
+            self.data_visualization_repayment()
 
-    # ToDO: Create a GUI for the data
-    #  GUI should allow user to update the data or visualize data
+    def decreasing_order_job(self):
+        if self.job_data is None:
+            self.show_error_message("No data Available. Please update data!")
+
+        elif self.display_list is None:
+            self.show_error_message("Please visualize the data first!")
+
+        else:
+            self.job_data = Data_GUI.sort_jobs_decreasing(self.job_data)
+            self.data_visualization_jobs()
+
+    def decreasing_order_repayment(self):
+        if self.repayment_data is None:
+            self.show_error_message("No data Available. Please update data!")
+
+        elif self.display_list is None:
+            self.show_error_message("Please visualize the data first!")
+
+        else:
+            self.repayment_data = Data_GUI.sort_repayment_decreasing(self.repayment_data)
+            self.data_visualization_repayment()
 
     # ToDo: For visualization, have two forms of data analysis
-    #  1) display data in color coded text format as a list in ascending or descending order (user chooses)
     #  2) render a map to visualize data
